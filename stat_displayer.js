@@ -2,11 +2,11 @@
 
     function printOdds(pool, lookForWinners, useOdds) {
 
-        var totalOdds = 0;
-        var players = pool.players;
-        var correctPicks = pool.correctPicks;
-        var teams = pool.teams;
-        var teamOdds = pool.teamOdds;
+        let totalOdds = 0;
+        const players = pool.players;
+        const correctPicks = pool.correctPicks;
+        const teams = pool.teams;
+        const teamOdds = pool.teamOdds;
 
         // collect all possible outcomes and print whatever interesting things about them
         function printData() {
@@ -15,11 +15,11 @@
                 return b.winShares - a.winShares;
             });
 
-            var message = "data for finishing " + (lookForWinners ? "first" : "last") +
+            const message = "data for finishing " + (lookForWinners ? "first" : "last") +
                 (useOdds? " using outcome odds from 538" : " assuming all outcomes have equal odds");
-            var toDisplay = { title: message, subMessages: [] };
+            const toDisplay = { title: message, subMessages: [] };
 
-            var sortedOdds = { title: "players sorted by odds", messages: [] };
+            const sortedOdds = { title: "players sorted by odds", messages: [] };
             players.forEach(function(player) {
                 sortedOdds.messages.push(printWinPercent(player));
             });
@@ -27,7 +27,6 @@
 
             toDisplay.subMessages.push(printUpcomingGames());
 
-            var title = (lookForWinners? "winners" : "losers" + " by game")
             toDisplay.subMessages.push({ title: (lookForWinners? "winners" : "losers") + " by game",
                                          messages: printClinchers() });
 
@@ -47,8 +46,8 @@
         function collectWins() {
             pool.allOutcomes.forEach(function (outcome) {
                 // get the winner(s) for each outcome, and update that player's winning outcomes and win shares
-                var winningPlayers = getWinners(outcome);
-                var odds = getOddsForOutcome(outcome);
+                const winningPlayers = getWinners(outcome);
+                const odds = getOddsForOutcome(outcome);
                 totalOdds += odds;
                 winningPlayers.forEach(function (winningPlayer) {
                     winningPlayer.winningOutcomes.push(outcome);
@@ -59,19 +58,19 @@
 
         // calculate the probability of the given outcome
         function getOddsForOutcome(outcome) {
-            var odds = 1;
+            let odds = 1;
             if (!useOdds) return odds;
 
             // the odds of a team winning takes into account winning all the games along the way, so only
             // factor in the odds for a team at their farthest point
-            var teamsSeen = {}; // keep track of the teams we've already accounted for
+            const teamsSeen = {}; // keep track of the teams we've already accounted for
             // work backwards from the champion to find teams at their furthest point
-            for (var round = outcome.length - 1; round >= 2; round--) {
-                for (var game = 0; game < outcome[round].length; game++) {
+            for (let round = outcome.length - 1; round >= 2; round--) {
+                for (let game = 0; game < outcome[round].length; game++) {
                     if (correctPicks[round][game]) continue;
-                    var team = outcome[round][game];
+                    const team = outcome[round][game];
                     if (!teamsSeen[team]) {
-                        var regionSeedId = teams[team].id;
+                        const regionSeedId = teams[team].id;
                         odds *= (teamOdds[regionSeedId][round + 1]);
                         teamsSeen[team] = true;
                     }
@@ -82,15 +81,15 @@
 
         // get the winner(s) for a given outcome - returns a list of players since ties are possible
         function getWinners(outcome) {
-            var winners = [];
-            var bestScore = null;
+            let winners = [];
+            let bestScore = null;
             players.forEach(function (player) {
-                var score = scorePicks(player.picks, outcome);
+                const score = scorePicks(player.picks, outcome);
                 if (scoreIsBetter(bestScore, score)) {
                     winners = [player]; // winners is a list of just this one player
                     bestScore = score;
                 }
-                else if (bestScore == score) { // tied, so add this player to the winners list
+                else if (bestScore === score) { // tied, so add this player to the winners list
                     winners.push(player);
                 }
             });
@@ -98,7 +97,7 @@
         }
 
         function scoreIsBetter(bestScore, score) {
-            if (bestScore == null) {
+            if (bestScore === null) {
                 return true;
             }
 
@@ -112,31 +111,29 @@
 
         // get the score for the given picks and the given outcomes
         function scorePicks(picks, outcome) {
-            var roundScore = 1; // starts at one and doubles each round
-            var score = 0;
-            for (var round = 0; round < outcome.length; round++) {
-                for (var game = 0; game < outcome[round].length; game++) {
-                    var winner = outcome[round][game];
-                    if (picks[round][game] === winner) { // correct! add the round score + the team's seed
-                        score += (roundScore + teams[winner].seed);
+            let score = 0;
+            for (let round = 0; round < outcome.length; round++) {
+                for (let game = 0; game < outcome[round].length; game++) {
+                    const winner = outcome[round][game];
+                    if (picks[round][game] === winner) { // correct! add to the score using the round's scoring function
+                        score += (pool.roundScoring[round](teams[winner].seed));
                     }
                 }
-                roundScore *= 2;
             }
             return score;
         }
 
         // for each game in the next incomplete round, print how each players' odds change depending on that game's outcome
         function printUpcomingGames() {
-            var displayUpcoming = { title: "upcoming games", subMessages: [] };
+            const displayUpcoming = { title: "upcoming games", subMessages: [] };
             players.forEach(function (player) {
-                if (player.winningOutcomes.length == 0) {
+                if (player.winningOutcomes.length === 0) {
                     return;
                 }
 
-                displayPlayerUpcoming = { title: printWinPercent(player), messages: [] };
-                for (var round = 0; round < correctPicks.length; round++) {
-                    for (var game = 0; game < correctPicks[round].length; game++) {
+                const displayPlayerUpcoming = { title: printWinPercent(player), messages: [] };
+                for (let round = 0; round < correctPicks.length; round++) {
+                    for (let game = 0; game < correctPicks[round].length; game++) {
                         if (correctPicks[round][game]) {
                             continue;
                         }
@@ -151,9 +148,9 @@
 
         // prints the games that would clinch a player winning
         function printClinchers() {
-            var map = initialBracket();
-            for (var round = 0; round < correctPicks.length; round++) {
-                for (var game = 0; game < correctPicks[round].length; game++) {
+            const map = initialBracket();
+            for (let round = 0; round < correctPicks.length; round++) {
+                for (let game = 0; game < correctPicks[round].length; game++) {
                     if (correctPicks[round][game]) {
                         continue;
                     }
@@ -161,12 +158,12 @@
                     map[round][game] = {};
                     players.forEach(function (player) {
                         player.winningOutcomes.forEach(function (winningOutcome) {
-                            var teamToPlayersWithTeam = map[round][game];
-                            var winner = winningOutcome[round][game];
+                            const teamToPlayersWithTeam = map[round][game];
+                            const winner = winningOutcome[round][game];
                             if (!teamToPlayersWithTeam[winner]) {
                                 teamToPlayersWithTeam[winner] = {};
                             }
-                            var playerCounts = teamToPlayersWithTeam[winner];
+                            const playerCounts = teamToPlayersWithTeam[winner];
                             if (!playerCounts[player.name]) {
                                 playerCounts[player.name] = 0;
                             }
@@ -179,19 +176,19 @@
         }
 
         function printMapResults(map) {
-            var messages = [];
-            for (var round = 0; round < map.length; round++) {
-                for (var game = 0; game < map[round].length; game++) {
+            const messages = [];
+            for (let round = 0; round < map.length; round++) {
+                for (let game = 0; game < map[round].length; game++) {
                     if (!map[round][game]) {
                         continue;
                     }
 
-                    var mapTeamToPlayerCounts = map[round][game];
-                    for (var teamName in mapTeamToPlayerCounts) {
+                    const mapTeamToPlayerCounts = map[round][game];
+                    for (const teamName in mapTeamToPlayerCounts) {
                         messages.push("players " + (lookForWinners ? "winning" : "losing") +
                             " when " + teamName + " " + roundActions[round]);
-                        var playerCounts = mapTeamToPlayerCounts[teamName];
-                        for (var player in playerCounts) {
+                        const playerCounts = mapTeamToPlayerCounts[teamName];
+                        for (const player in playerCounts) {
                             messages.push("    " + player + " " + playerCounts[player] + " times");
                         }
                         messages.push("<br>");
@@ -202,7 +199,7 @@
         }
 
         function printWinPercent(player) {
-            var winPercent = ((player.winShares / totalOdds) * 100).toFixed(2);
+            const winPercent = ((player.winShares / totalOdds) * 100).toFixed(2);
             if (useOdds) {
                 return player.name + (lookForWinners ? " wins " : " loses ") + winPercent + "% of outcomes (" +
                     player.winningOutcomes.length + " total " + (lookForWinners ? " winning " : " losing ") + " scenarios)";
@@ -215,19 +212,19 @@
 
         // look at the given player's winning outcomes for the given round and game and print percentages for each outcome
         function printGameResultsForPlayer(player, round, game) {
-            var counts = {};
-            var messages = [];
+            const counts = {};
+            const messages = [];
             player.winningOutcomes.forEach(function (winningOutcome) {
-                var team = winningOutcome[round][game];
+                const team = winningOutcome[round][game];
                 if (!counts[team]) {
                     counts[team] = 0;
                 }
                 counts[team]++;
             });
             messages.push("for game " + (game+1) + " in the " + roundNames[round] + ": ");
-            for (var team in counts) {
-                var count = counts[team];
-                var percent = ((count / player.winningOutcomes.length) * 100).toFixed(2);
+            for (const team in counts) {
+                const count = counts[team];
+                const percent = ((count / player.winningOutcomes.length) * 100).toFixed(2);
                 messages.push(team + " in " + percent + "% of winning outcomes (" + count + " times)<br>");
             }
             return messages;
@@ -236,24 +233,24 @@
         // look at each game for each player, and find ones where there is only a single outcome in all their winning
         // outcomes. This means they're eliminated if they don't get that outcome
         function printCommonGames() {
-            var messages = [];
+            const messages = [];
             players.forEach(function (player) {
-                if (player.winningOutcomes.length == 0) {
+                if (player.winningOutcomes.length === 0) {
                     return;
                 }
 
-                for (var round = 0; round < correctPicks.length; round++) {
-                    for (var game = 0; game < correctPicks[round].length; game++) {
+                for (let round = 0; round < correctPicks.length; round++) {
+                    for (let game = 0; game < correctPicks[round].length; game++) {
                         if (correctPicks[round][game]) {
                             continue;
                         }
-                        var winner = null;
-                        var commonGame = true;
-                        for (var i = 0; i < player.winningOutcomes.length; i++) {
-                            if (winner == null) {
+                        let winner = null;
+                        let commonGame = true;
+                        for (let i = 0; i < player.winningOutcomes.length; i++) {
+                            if (winner === null) {
                                 winner = player.winningOutcomes[i][round][game];
                             }
-                            else if (winner != player.winningOutcomes[i][round][game]) {
+                            else if (winner !== player.winningOutcomes[i][round][game]) {
                                 commonGame = false;
                                 break;
                             }
@@ -268,10 +265,10 @@
         }
 
         function initialBracket() {
-            var noPicks = [];
-            for (var round = 0; round < correctPicks.length; round++) {
+            const noPicks = [];
+            for (let round = 0; round < correctPicks.length; round++) {
                 noPicks[round] = [];
-                for (var game = 0; game < correctPicks[round].length; game++) {
+                for (let game = 0; game < correctPicks[round].length; game++) {
                     noPicks[round].push("");
                 }
             }
@@ -279,7 +276,7 @@
         }
 
         // maps round numbers to a message to print out above
-        var roundActions = [
+        const roundActions = [
             "wins the first game",
             "gets to the sweet 16",
             "gets to the elite eight",
@@ -288,7 +285,7 @@
             "wins the championship"
         ];
 
-        var roundNames = [
+        const roundNames = [
             "2nd round",
             "sweet 16",
             "elite eight",
@@ -297,17 +294,17 @@
         ];
 
         return printData();
-    };
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Below are functions I used on the cbs pages to scrape the above team and player data
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    var getGamesByRound = function(regions) {
-        var gamesByRound = [];
-        for (var round = 0; round < 4; round++) {
+    const getGamesByRound = function(regions) {
+        const gamesByRound = [];
+        for (let round = 0; round < 4; round++) {
             roundGames = [];
-            for (var region = 0; region < 4; region++) {
+            for (let region = 0; region < 4; region++) {
                 regions[region].rounds[round].games.forEach(function(game) {
                     game.region = regions[region].name.toLowerCase();
                     roundGames.push(game);
@@ -316,10 +313,10 @@
             gamesByRound.push(roundGames);
         }
 
-        var final4Rounds = regions[4].rounds;
-        for (var round = 0; round < final4Rounds.length; round++) {
-            var roundGames = [];
-            final4Rounds[round].games.forEach(function(game) {
+        const final4Rounds = regions[4].rounds;
+        for (let i = 0; i < final4Rounds.length; i++) {
+            const roundGames = [];
+            final4Rounds[i].games.forEach(function(game) {
                 roundGames.push(game);
             });
             gamesByRound.push(roundGames);
@@ -327,21 +324,21 @@
         return gamesByRound;
     };
 
-    var getTeams = function(gamesByRound) {
-        var teams = {};
+    const getTeams = function(gamesByRound) {
+        const teams = {};
         gamesByRound[0].forEach(function(game) { // pull the team names from the first round games
-            var homeSeed = parseInt(game.home_seed);
+            const homeSeed = parseInt(game.home_seed);
             teams[game.home_abbr] = { seed: homeSeed , id: game.region + homeSeed, name: game.home_name };
-            var awaySeed = parseInt(game.away_seed);
+            const awaySeed = parseInt(game.away_seed);
             teams[game.away_abbr] = { seed: awaySeed, id: game.region + awaySeed, name: game.away_name };
         });
         return teams;
     };
 
-    var getPicks = function(gamesByRound, gameToPickFn) {
-        var picks = [];
+    const getPicks = function(gamesByRound, gameToPickFn) {
+        const picks = [];
         gamesByRound.forEach(function(round) {
-            roundPicks = [];
+            const roundPicks = [];
             round.forEach(function(game) {
                 roundPicks.push(gameToPickFn(game));
             });
@@ -350,38 +347,68 @@
         return picks;
     };
 
-    var correctPick = function(game) {
+    const correctPick = function(game) {
         return game.winner_abbr;
     };
 
-    var playerPick = function(game) {
+    const playerPick = function(game) {
         return game.user_pick.pick;
     };
 
-    var getDataAndPrintOdds = function() {
+    const getDataAndPrintOdds = function() {
         addLogArea();
-        var pool = {
+        const pool = {
             correctPicks: null,
             teams: null,
             teamOdds: null,
+            roundScoring: [],
             allOutcomes: [],
             players: []
         };
-        getOdds(pool);
+        getRules(pool);
     };
 
-    var getAllPlayerData = function(pool) {
-        $.get(window.location.origin + "/brackets/standings", function(response) {
-            getPlayerData(1, $(response), pool);
-        });
-    }
+    const getRules = function(pool) {
+        logLine("getting scoring rules for pool");
+        $.get(window.location.origin + "/office-pool/rules", function(response) {
+            const roundPoints = $(response).find(".tableRules").text().split("Each correct pick is worth ");
+            for (let i = 1; i < roundPoints.length; i++) {
+                const rule = roundPoints[i];
+                const base = parseInt(rule);
+                const addSeedBonus = rule.indexOf("added") > 0;
+                // I know this option exists but I don't have an example, so this should catch [M|m]ultipl[ied|y]
+                const multiplySeedBonus = rule.indexOf("ultipl") > 0;
 
-    var getPlayerData = function(playerNum, $html, pool) {
-        var link = $html.find('#' + playerNum + ' a');
-        if (!link || !link.length) {
+                // each round is mapped to a function that takes the winner's seed and returns the points earned
+                pool.roundScoring.push(function(seed) {
+                    if (addSeedBonus) {
+                        return base + seed;
+                    }
+                    else if (multiplySeedBonus) {
+                        return base * seed;
+                    }
+                    return base;
+                });
+            }
+
+            getOdds(pool);
+        })
+    };
+
+    const getAllPlayerData = function(pool) {
+        $.get(window.location.origin + "/brackets/standings", function(response) {
+            const playerRows = $(response).find(".data tr[align=right] a");
+            getPlayerData(0, playerRows, pool);
+        });
+    };
+
+    const getPlayerData = function(playerNum, playerRows, pool) {
+        if (playerNum >= playerRows.length) { // no more player data to fetch, now analyze it
             logLine("analyzing possible outcomes");
             collectAllOutcomes(pool.correctPicks, pool); // add all possible outcomes to the current known outcomes
 
+            finishLogLine();
+            finishLogLine();
             logDisplay(printOdds(pool, true, true));
             logDisplay(printOdds(pool, true, false));
             logDisplay(printOdds(pool, false, true));
@@ -389,14 +416,20 @@
             return;
         }
 
-        var name = link.text();
-        var url = link.attr('href');
+        const link = $(playerRows[playerNum]);
+        const name = link.text();
+        const url = link.attr('href');
+        if (!url || !url.length) {
+            logLine("no data for " + name + ", skipping...");
+            return getPlayerData(playerNum + 1, playerRows, pool);
+        }
+
         log("getting data for " + name);
         $.get(url, function(response) {
             log(' ...parsing...');
             finishLogLine();
 
-            var gamesByRound = getGamesFromResponse(response);
+            const gamesByRound = getGamesFromResponse(response);
             if (!gamesByRound) {
                 return;
             }
@@ -408,33 +441,33 @@
                 pool.correctPicks = getPicks(gamesByRound, correctPick);
             }
 
-            var playerPicks = getPicks(gamesByRound, playerPick);
+            const playerPicks = getPicks(gamesByRound, playerPick);
             pool.players.push({
                 name: name,
                 picks: playerPicks,
                 winShares: 0,
                 winningOutcomes: []
             });
-            getPlayerData(playerNum + 1, $html, pool);
+            getPlayerData(playerNum + 1, playerRows, pool);
         });
     };
 
-    var getOdds = function(pool) {
-        logLine("getting game odds from fivethirtyeight.com");
+    const getOdds = function(pool) {
+        logLine("getting game odds from 538");
         $.get("https://projects.fivethirtyeight.com/march-madness-api/2018/fivethirtyeight_ncaa_forecasts.csv",
             function(response) {
-                var teamOdds = {};
-                var rows = response.split('\n');
-                for (var i = 1; i < rows.length; i++) {
-                    var cols = rows[i].split(",");
+                const teamOdds = {};
+                const rows = response.split('\n');
+                for (let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].split(",");
                     if (parseInt(cols[10]) === 0) { // col 10 is team_alive, 0 means false
                         break;
                     }
-                    var odds = [];
-                    for (var j = 3; j <= 9; j++) {
+                    const odds = [];
+                    for (let j = 3; j <= 9; j++) {
                         odds.push(parseFloat(cols[j]));
                     }
-                    var regionSeedId = cols[14].toLowerCase() + parseInt(cols[15]);
+                    const regionSeedId = cols[14].toLowerCase() + parseInt(cols[15]);
                     teamOdds[regionSeedId] = odds;
                 }
                 pool.teamOdds = teamOdds;
@@ -442,13 +475,13 @@
         });
     };
 
-    var getGamesFromResponse = function(reponse) {
-        var marker = "bootstrapBracketsData = ";
-        var startIndex = reponse.indexOf(marker) + marker.length;
-        var endIndex = reponse.indexOf('};', startIndex) + 1;
+    const getGamesFromResponse = function(reponse) {
+        const marker = "bootstrapBracketsData = ";
+        const startIndex = reponse.indexOf(marker) + marker.length;
+        const endIndex = reponse.indexOf('};', startIndex) + 1;
         try {
             reponse = reponse.substring(startIndex, endIndex);
-            var regions = JSON.parse(reponse).game_and_pick_list.regions;
+            const regions = JSON.parse(reponse).game_and_pick_list.regions;
             return getGamesByRound(regions);
         }
         catch(e) {
@@ -457,14 +490,14 @@
     };
 
     function collectAllOutcomes(currentOutcome, pool) {
-        for (var round = 0; round < currentOutcome.length; round++) {
-            for (var game = 0; game < currentOutcome[round].length; game++) {
+        for (let round = 0; round < currentOutcome.length; round++) {
+            for (let game = 0; game < currentOutcome[round].length; game++) {
                 // when we find an undecided game, recurse down each possible path
                 if (!currentOutcome[round][game]) {
                     // make two copies of the current outcome
-                    var outcomeAsString = JSON.stringify(currentOutcome);
-                    var branch1 = JSON.parse(outcomeAsString);
-                    var branch2 = JSON.parse(outcomeAsString);
+                    const outcomeAsString = JSON.stringify(currentOutcome);
+                    const branch1 = JSON.parse(outcomeAsString);
+                    const branch2 = JSON.parse(outcomeAsString);
 
                     // add each team from the previous round and recurse with each branch
                     branch1[round][game] = currentOutcome[round - 1][game * 2];
@@ -480,8 +513,31 @@
     }
 
     function addLogArea() {
-        $("body").prepend($(`<div class="logArea" style="padding:10px;text-align:center;height:400px;overflow-y:scroll;"></div>`));
+        $("body").prepend($(`
+            <div class="flyout" style="padding:24px;
+                                       max-height: 80%;
+                                       position: fixed;
+                                       background: #faebd7;
+                                       top: 50%;
+                                       left: 50%;
+                                       transform: translate(-50%, -50%);
+                                       border: 1px solid black;
+                                       box-shadow: 0 10px 16px 0 rgba(0,0,0,0.5);
+                                       z-index: 999999999;
+                                       text-align: center;
+                                       overflow-y: scroll;">
+                <div style="font-size: 24px;">
+                    Bracket Stats
+                    <div style="float:right;font-size:24px;cursor:pointer" 
+                         onclick="$(this).closest('.flyout').remove();">X</div> 
+                </div>        
+                <div class="logArea" style="margin-top:10px;">
+                </div>
+            </div>`
+        ));
     }
+
+    const indentAmount = 20;
 
     function logLine(msg) {
         msg = msg || "";
@@ -497,36 +553,57 @@
     }
 
     function logDisplay(displayObj) {
-        $(".logArea").append($(getHtml(displayObj)));
+        $(".logArea").append($(getHtml(displayObj, indentAmount)));
     }
 
-    function getHtml(displayObj) {
+    function getHtml(displayObj, indent) {
         return `
-            <div>
-                <div style="cursor:pointer" onclick="$(this).children('.toToggle').toggle(); $(this).siblings('.toToggle').toggle();">
+            <div style="text-align:left;">
+                <div style="cursor:pointer; margin-bottom:6px; font-weight:bold;" 
+                     onclick="$(this).children('.toToggle').toggle(); $(this).siblings('.toToggle').toggle();">
                     <span class="toToggle">+</span><span class="toToggle" style="display:none">-</span>
                     <span>` + displayObj.title + `</span>
                 </div>
-                <div class="toToggle" style="display:none">`+ getContentToToggle(displayObj) +`</div>
+                <div class="toToggle" style="display:none; margin-left:` + indent + `px;">
+                    ` + getContentToToggle(displayObj, indent) + `
+                </div>
             </div>`;
     }
 
-    function getContentToToggle(displayObj) {
+    function getContentToToggle(displayObj, indent) {
         if (displayObj.hasOwnProperty("messages")) {
-            var messages = "";
+            let messages = "";
             displayObj.messages.forEach(function(message) {
                 messages += ("<div>" + message + "</div>");
             });
+            messages += "<br>";
             return messages;
         }
         else if (displayObj.hasOwnProperty("subMessages")) {
-            var html = "";
+            let html = "";
             displayObj.subMessages.forEach(function(subMessage) {
-                html += (getHtml(subMessage));
+                html += (getHtml(subMessage, indent + indentAmount));
             });
             return html;
         }
         return "";
+    }
+
+    function printAllCurrentScores(pool) {
+        pool.players.forEach(function(player) {
+            let score = 0;
+            const outcome = pool.correctPicks;
+            const picks = player.picks;
+            for (let round = 0; round < outcome.length; round++) {
+                for (let game = 0; game < outcome[round].length; game++) {
+                    const winner = outcome[round][game];
+                    if (picks[round][game] === winner) { // correct! add to the score using the round's scoring function
+                        score += (pool.roundScoring[round](pool.teams[winner].seed));
+                    }
+                }
+            }
+            console.log(player.name + " has " + score + " points");
+        });
     }
 
     // do all the stuff!
