@@ -506,6 +506,7 @@
     }
 
     function addLogArea() {
+        $(".flyout .logArea").empty();
         $("body").prepend($(`
             <div class="flyout" style="padding:24px;
                                        max-height: 80%;
