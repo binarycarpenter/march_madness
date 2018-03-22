@@ -200,14 +200,7 @@
 
         function printWinPercent(player) {
             const winPercent = ((player.winShares / totalOdds) * 100).toFixed(2);
-            if (useOdds) {
-                return player.name + (lookForWinners ? " wins " : " loses ") + winPercent + "% of outcomes (" +
-                    player.winningOutcomes.length + " total " + (lookForWinners ? " winning " : " losing ") + " scenarios)";
-            }
-            else {
-                return player.name + (lookForWinners ? " wins " : " loses ") + winPercent + "% of outcomes (" +
-                    player.winShares.toFixed(2) + " of " + totalOdds.toFixed(2) + ")";
-            }
+            return player.name + (lookForWinners ? " wins " : " loses ") + winPercent + "% of outcomes";
         }
 
         // look at the given player's winning outcomes for the given round and game and print percentages for each outcome
