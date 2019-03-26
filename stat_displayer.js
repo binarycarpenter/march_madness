@@ -447,20 +447,20 @@
 
     const getOdds = function(pool) {
         logLine("getting game odds from 538");
-        $.get("https://projects.fivethirtyeight.com/march-madness-api/2018/fivethirtyeight_ncaa_forecasts.csv",
+        $.get("https://projects.fivethirtyeight.com/march-madness-api/2019/fivethirtyeight_ncaa_forecasts.csv",
             function(response) {
                 const teamOdds = {};
                 const rows = response.split('\n');
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(",");
-                    if (parseInt(cols[10]) === 0) { // col 10 is team_alive, 0 means false
+                    if (parseInt(cols[11]) === 0) { // col 11 is team_alive, 0 means false
                         break;
                     }
                     const odds = [];
                     for (let j = 3; j <= 9; j++) {
                         odds.push(parseFloat(cols[j]));
                     }
-                    const regionSeedId = cols[14].toLowerCase() + parseInt(cols[15]);
+                    const regionSeedId = cols[15].toLowerCase() + parseInt(cols[16]);
                     teamOdds[regionSeedId] = odds;
                 }
                 pool.teamOdds = teamOdds;
@@ -522,7 +522,7 @@
                                        overflow-y: scroll;">
                 <div style="font-size: 24px;">
                     Bracket Stats
-                    <div style="float:right;font-size:24px;cursor:pointer" 
+                    <div style="float:right;font-size:18px;cursor:pointer" 
                          onclick="$(this).closest('.flyout').remove();">X</div> 
                 </div>        
                 <div class="logArea" style="margin-top:10px;">
